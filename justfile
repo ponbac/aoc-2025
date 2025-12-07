@@ -8,6 +8,8 @@ test day:
     cargo watch -q -x "nextest run -p day-{{day}}"
 new day:
     cargo new day-{{day}}
+    cargo add -p day-{{day}} --path aoc
+    cargo add -p day-{{day}} itertools
     just input {{day}}
 run day:
     RUSTFLAGS='-C target-cpu=native' cargo run -p day-{{day}} --release
