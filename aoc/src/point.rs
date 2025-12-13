@@ -103,14 +103,39 @@ impl AddAssign<Direction> for Point {
     }
 }
 
-// Implement subtraction between Points
-impl Sub<Point> for Point {
-    type Output = Point;
-
-    fn sub(self, other: Point) -> Point {
-        Point::new(self.x - other.x, self.y - other.y)
-    }
+// Macro to implement binary ops for all reference combinations
+macro_rules! impl_point_binop {
+    ($trait:ident, $method:ident, $op:tt) => {
+        impl $trait<Point> for Point {
+            type Output = Point;
+            fn $method(self, other: Point) -> Point {
+                Point::new(self.x $op other.x, self.y $op other.y)
+            }
+        }
+        impl $trait<&Point> for Point {
+            type Output = Point;
+            fn $method(self, other: &Point) -> Point {
+                Point::new(self.x $op other.x, self.y $op other.y)
+            }
+        }
+        impl $trait<Point> for &Point {
+            type Output = Point;
+            fn $method(self, other: Point) -> Point {
+                Point::new(self.x $op other.x, self.y $op other.y)
+            }
+        }
+        impl $trait<&Point> for &Point {
+            type Output = Point;
+            fn $method(self, other: &Point) -> Point {
+                Point::new(self.x $op other.x, self.y $op other.y)
+            }
+        }
+    };
 }
+
+// Implement Add and Sub for all reference combinations
+impl_point_binop!(Add, add, +);
+impl_point_binop!(Sub, sub, -);
 
 // Implement subtraction assignment between Points
 impl SubAssign<Point> for Point {
@@ -170,3 +195,32 @@ macro_rules! impl_numeric_ops {
 }
 
 impl_numeric_ops!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
+
+impl Point {
+    /// Prints a list of points as a grid with '#' for points and '.' for empty cells.
+    /// Grid has a border of one empty cell around all points.
+    pub fn print_grid(points: &[Point]) {
+        if points.is_empty() {
+            return;
+        }
+
+        let max_x = points.iter().map(|p| p.x).max().unwrap_or(0);
+        let max_y = points.iter().map(|p| p.y).max().unwrap_or(0);
+        let width = (max_x + 2) as usize;
+        let height = (max_y + 2) as usize;
+
+        let point_set: std::collections::HashSet<_> = points.iter().collect();
+
+        for y in 0..height {
+            for x in 0..width {
+                let p = Point::new(x as isize, y as isize);
+                if point_set.contains(&p) {
+                    print!("#");
+                } else {
+                    print!(".");
+                }
+            }
+            println!();
+        }
+    }
+}
